@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "watch": true,
+        "lib": ["DOM", "ES6", "ES2016.Array.Include"],
+        "outDir": "./dist",
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "removeComments": false,
+        "alwaysStrict": true,
+        "strict": true
+    }
+}
