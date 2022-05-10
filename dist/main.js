@@ -15,12 +15,14 @@ let connectionColor = "rgba(255, 255, 0, 0.5)";
 let highlightColor = "rgba(0, 255, 255, 1)";
 let topHighlightColor = "rgba(0, 255, 0, 1)";
 let depsHighlightColor = highlightColor;
+let helpBoxColor = "#111111";
 let churchDisdainColor = "#ee6";
 let churchHateColor = "#f84";
 let churchRepugnantColor = "#f11";
 let textShadowColor = "#000";
 let textPlainColor = "#fff";
-
+let textControlColor = "#ff0";
+;
 class Cell {
     tree;
     tech;
@@ -427,7 +429,7 @@ function draw() {
     clear("#111");
     if (hoveredTech && hoveredTech.extra.length != 0) {
         ctx.fillStyle = "#eff";
-        ctx.fillText(hoveredTech.name + ": " + hoveredTech.extra, 10, height - 40);
+        ctx.fillText(hoveredTech.name + ": " + hoveredTech.extra, 5, height - 80);
         ctx.fillStyle = textShadowColor;
     }
     ctx.fillStyle = "#111";
@@ -669,26 +671,70 @@ function equalVec(v1, v2) {
 function lerp(v0, v1, t) {
     return v0 * (1 - t) + v1 * t;
 }
+function controlText(control, text, x, y) {
+    ctx.fillStyle = textControlColor;
+    ctx.fillText(control, x, y);
+    ctx.fillStyle = textPlainColor;
+    ctx.fillText(" " + text, x + ctx.measureText(control).width, y);
+}
 function gridMode() {
-    ctx.translate(0, -scrollOffsetCurrent);
+    ctx.translate(0, -scrollOffsetCurrentY);
     drawGrid();
     ctx.resetTransform();
     ctx.textBaseline = "bottom";
-    ctx.fillText("Left-Click on a technology to show its requirements. Right-Click to show techs that depend on it. Press 't' to toggle showing total costs on all techs. Press 'h' to toggle Church opinion.", 10, height - 4);
+    let th = 18;
+    let x = 5;
+    let y = height - th * 3;
+    let columnTwoOffset = 500;
+    ctx.fillStyle = helpBoxColor;
+    ctx.fillRect(0, height - th * 4, 1000, th * 4);
+    controlText("Left-Click", "on a technology to show its requirements.", x, y + th * 0);
+    controlText("Right-Click", "on a technology to show techs that depend on it.", x, y + th * 1);
+    controlText("t", "to toggle showing total costs on all techs.", x, y + th * 2);
+    controlText("h", "to toggle Church opinion.", x, y + th * 3);
+    controlText("Drag-and-drop", "a TECH.DAT onto the window to load it.", x + columnTwoOffset, height - th * 1);
+    controlText("Mouse-wheel", "to scroll the view up and down.", x + columnTwoOffset, height);
 }
 function treeMode() {
+    ctx.translate(-scrollOffsetCurrentX, 0);
     renderTreeRequirements(5, 10, treeList[activeTech.id]);
+    ctx.resetTransform();
     ctx.textBaseline = "bottom";
-    ctx.fillText("Left-Click on a technology to focus on it. Right-Click a tech to show techs that depend on it. (Right-Click in open space to return to the menu) Press 'h' to toggle Church opinion.", 10, height - 4);
+    let th = 18;
+    let x = 5;
+    let y = height - th * 3;
+    let columnTwoOffset = 500;
+    ctx.fillStyle = helpBoxColor;
+    ctx.fillRect(0, height - th * 4, 1000, th * 4);
+    controlText("Left-Click", "on a technology to show its requirements.", x, y + th * 0);
+    controlText("Right-Click", "on a technology to show techs that depend on it.", x, y + th * 1);
+    controlText("t", "to toggle showing total costs on all techs.", x, y + th * 2);
+    controlText("h", "to toggle Church opinion.", x, y + th * 3);
+    controlText("Drag-and-drop", "a TECH.DAT onto the window to load it.", x + columnTwoOffset, height - th * 1);
+    controlText("Right-Click", "in open space to return to the menu.", x + columnTwoOffset, height - th * 2);
+    controlText("Mouse-wheel", "to scroll the view left and right.", x + columnTwoOffset, height);
 }
 let tempScale = 1;
 function treeTopMode() {
+    ctx.translate(-scrollOffsetCurrentX, 0);
     ctx.scale(tempScale, tempScale);
-    let outerHeight = renderTreeLeadsTo(5, 10, treeListLeadsTo[activeTech.id]).outerHeight * 1.1;
+    let outerHeight = renderTreeLeadsTo(5, 10, treeListLeadsTo[activeTech.id]).outerHeight * 1.2;
     tempScale = outerHeight >= height ? 1 / (outerHeight / height) : 1;
     ctx.resetTransform();
     ctx.textBaseline = "bottom";
-    ctx.fillText("Left-Click on a technology to focus on it. Right-Click a tech to show techs that depend on it. (Right-Click in open space to return to the menu) Press 'h' to toggle Church opinion.", 10, height - 4);
+    let th = 18;
+    let x = 5;
+    let y = height - th * 3;
+    let columnTwoOffset = 500;
+    ctx.fillStyle = helpBoxColor;
+    ctx.fillRect(0, height - th * 4, 1000, th * 4);
+    controlText("Left-Click", "on a technology to show its requirements.", x, y + th * 0);
+    controlText("Right-Click", "on a technology to show techs that depend on it.", x, y + th * 1);
+    controlText("t", "to toggle showing total costs on all techs.", x, y + th * 2);
+    controlText("h", "to toggle Church opinion.", x, y + th * 3);
+    controlText("Drag-and-drop", "a TECH.DAT onto the window to load it.", x + columnTwoOffset, height - th * 1);
+    controlText("Right-Click", "in open space to return to the menu.", x + columnTwoOffset, height - th * 2);
+    controlText("Mouse-wheel", "to scroll the view left and right.", x + columnTwoOffset, height);
 }
 let state = gridMode;
 let hoveredTech = null;
@@ -708,14 +754,22 @@ canvas.addEventListener("mousemove", function (e) {
     mouseX = canvasX;
     mouseY = canvasY;
 });
-let scrollOffsetCurrent = 0;
-let scrollOffsetTarget = 0;
+let scrollOffsetCurrentY = 0;
+let scrollOffsetTargetY = 0;
+let scrollOffsetCurrentX = 0;
+let scrollOffsetTargetX = 0;
 canvas.addEventListener("wheel", e => {
     if (state === gridMode) {
         let scrollDelta = e.deltaY > 0 ? 1 : -1;
-        scrollOffsetTarget += scrollDelta * 120;
-        scrollOffsetTarget = scrollOffsetTarget > 0 ? scrollOffsetTarget : 0;
-        scrollOffsetCurrent = scrollOffsetTarget;
+        scrollOffsetTargetY += scrollDelta * 120;
+        scrollOffsetTargetY = scrollOffsetTargetY > 0 ? scrollOffsetTargetY : 0;
+        scrollOffsetCurrentY = scrollOffsetTargetY;
+    }
+    if (state !== gridMode) {
+        let scrollDelta = e.deltaY > 0 ? 1 : -1;
+        scrollOffsetTargetX += scrollDelta * 120;
+        scrollOffsetTargetX = scrollOffsetTargetX > 0 ? scrollOffsetTargetX : 0;
+        scrollOffsetCurrentX = scrollOffsetTargetX;
     }
 }, { passive: true });
 canvas.addEventListener("click", e => {
@@ -743,8 +797,10 @@ document.addEventListener("keyup", e => {
     if (e.key == "h")
         showChurchLike = !showChurchLike;
     if (e.key == "Home") {
-        scrollOffsetCurrent = 0;
-        scrollOffsetTarget = 0;
+        scrollOffsetCurrentY = 0;
+        scrollOffsetTargetY = 0;
+        scrollOffsetCurrentX = 0;
+        scrollOffsetTargetX = 0;
     }
 });
 function dragOverHandler(e) {
