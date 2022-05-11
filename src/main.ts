@@ -736,10 +736,15 @@ function drawTechLabel(x: number, y: number, tech: Tech) {
 
 
 function drawGrid() {
+    //let w = techBoxWidth;
+    //let h = techBoxHeight;
     let w = 200;
     let h = 40;
     let space = 5;
     let cols = 6;
+    if (width < 6 * w) {
+        cols = Math.floor(width / (w));
+    }
     technology.forEach((tech, index) => {
             ctx.fillStyle = Colors.get(tech.category!)!;
 
@@ -927,7 +932,7 @@ let tempScale = 1;
 function treeTopMode() {
     ctx.translate(-scrollOffsetCurrentX, 0);
     ctx.scale(tempScale, tempScale);
-    let outerHeight = renderTreeLeadsTo(5, 10, treeListLeadsTo[activeTech.id]).outerHeight * 1.2;
+    let outerHeight = renderTreeLeadsTo(5, 10, treeListLeadsTo[activeTech.id]).outerHeight * 1.4;
     tempScale = outerHeight >= height ? 1/(outerHeight/height) : 1;
     ctx.resetTransform();
 
